@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis HOTS Panca Indra</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FF5722; /* Deep Orange */
+            --primary-hover: #E64A19;
+            --secondary: #2196F3; /* Blue */
+            --background: #FFF3E0;
+            --card-bg: #FFFFFF;
+            --text-main: #333333;
+            --correct: #4CAF50; /* Green */
+            --wrong: #F44336; /* Red */
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            background-image: radial-gradient(#FFE0B2 2px, transparent 2px);
+            background-size: 30px 30px;
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .app-container {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 500px;
+            border-radius: 28px;
+            box-shadow: 0 12px 35px var(--shadow-color);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background-color: var(--secondary);
+            color: white;
+            padding: 24px 20px;
+            text-align: center;
+            border-bottom-left-radius: 28px;
+            border-bottom-right-radius: 28px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .progress-bar-container {
+            padding: 0 24px;
+            margin-bottom: 10px;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .score-badge {
+            background: #FFF9C4;
+            color: #F57F17;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .progress-track {
+            height: 12px;
+            background-color: #F5F5F5;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 10px;
+        }
+
+        .question-box {
+            padding: 15px 24px 20px;
+            text-align: left;
+        }
+
+        .question-img-container {
+            width: 100%;
+            height: 180px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 4px solid #BBDEFB;
+            display: none; 
+            overflow: hidden;
+            background-color: white;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .question-img-container svg {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .question-text {
+            font-size: 1.25rem;
+            line-height: 1.5;
+            font-weight: 500;
+            color: #2C3E50;
+        }
+
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 0 24px 20px;
+        }
+
+        .option-btn {
+            background-color: white;
+            border: 3px solid #EEEEEE;
+            border-radius: 16px;
+            padding: 16px 20px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            line-height: 1.4;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            color: var(--text-main);
+            outline: none;
+            position: relative;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--secondary);
+            background-color: #E3F2FD;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(33, 150, 243, 0.15);
+        }
+
+        .option-btn:active:not(:disabled) {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(33, 150, 243, 0.15);
+        }
+
+        .option-btn.correct {
+            background-color: var(--correct);
+            border-color: var(--correct);
+            color: white;
+            box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
+            animation: pop 0.3s ease;
+        }
+
+        .option-btn.wrong {
+            background-color: var(--wrong);
+            border-color: var(--wrong);
+            color: white;
+            animation: shake 0.4s ease;
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+        }
+
+        .feedback-area {
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: 600;
+            min-height: 40px;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .feedback-area.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .feedback-correct { color: #4CAF50; }
+        .feedback-wrong { color: #FF5252; }
+
+        .action-container {
+            padding: 0 24px 24px;
+        }
+
+        .next-btn {
+            display: none;
+            width: 100%;
+            padding: 16px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 6px 0px #D84315;
+            transition: all 0.1s;
+        }
+
+        .next-btn.show {
+            display: block;
+            animation: slideUp 0.3s ease forwards;
+        }
+
+        .next-btn:hover { background-color: #E64A19; }
+        
+        .next-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0px #D84315;
+        }
+
+        /* Result Screen */
+        #result-screen {
+            display: none;
+            text-align: center;
+            padding-bottom: 30px;
+        }
+
+        #result-screen.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background-color: var(--secondary);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4rem;
+            font-weight: 600;
+            margin: 10px auto 25px;
+            border: 8px solid #E1F5FE;
+            box-shadow: 0 0 0 4px var(--secondary), 0 10px 20px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .result-text {
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .result-desc {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 30px;
+            padding: 0 20px;
+        }
+
+        .restart-btn {
+            display: block;
+            background-color: #4CAF50;
+            box-shadow: 0 6px 0px #388E3C;
+            margin: 0 auto;
+            width: calc(100% - 48px);
+        }
+
+        .restart-btn:hover { background-color: #45a049; }
+        
+        .restart-btn:active {
+            box-shadow: 0 2px 0px #388E3C;
+            transform: translateY(4px);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            animation: fall linear forwards;
+            z-index: 100;
+        }
+
+        @keyframes fall {
+            to { transform: translateY(100vh) rotate(720deg); }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .app-container { border-radius: 20px; }
+            .header { border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; padding: 20px 15px; }
+            .question-img-container { height: 160px; }
+            .question-text { font-size: 1.15rem; }
+            .option-btn { padding: 14px 18px; font-size: 1.05rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- Quiz Screen -->
+        <div id="quiz-screen">
+            <div class="header">
+                <h1>HOTS Panca Indra 🧠</h1>
+            </div>
+            
+            <div class="progress-bar-container">
+                <div class="stats-row">
+                    <span id="question-count">Soal 1/10</span>
+                    <span class="score-badge" id="current-score">⭐ 0</span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill" id="progress-bar"></div>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <div id="question-image" class="question-img-container">
+                    <!-- SVG diinjeksi oleh JS -->
+                </div>
+                <p class="question-text" id="question-text">Memuat pertanyaan...</p>
+            </div>
+
+            <div class="options-grid" id="options">
+                <!-- Options injected by JS -->
+            </div>
+
+            <div class="feedback-area" id="feedback">
+                <!-- Feedback injected by JS -->
+            </div>
+
+            <div class="action-container">
+                <button class="next-btn" id="next-btn" onclick="nextQuestion()">Selanjutnya ➡️</button>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen">
+            <div class="header" style="margin-bottom: 0;">
+                <h1>Hasil Kuis 🏆</h1>
+            </div>
+            
+            <div style="background-color: var(--secondary); height: 50px; border-bottom-left-radius: 50%; border-bottom-right-radius: 50%; margin-bottom: 30px;">
+                <!-- Decorative curve -->
+            </div>
+
+            <div class="score-circle" id="final-score">0</div>
+            
+            <h2 class="result-text" id="result-title">Luar Biasa!</h2>
+            <p class="result-desc" id="result-message">Kamu berhasil menyelesaikan kuis HOTS hari ini.</p>
+            
+            <button class="next-btn restart-btn show" onclick="startQuiz()">Main Lagi 🔄</button>
+        </div>
+
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                question: "Budi sedang pilek hidungnya tersumbat. Saat makan sup ayam, ia merasa supnya sangat hambar. Mengapa meminum sup ayam saat pilek terasa hambar?",
+                options: [
+                    "Suhu sup yang sangat panas merusak saraf sensorik sementara",
+                    "Aroma makanan terhalang lendir dan tak bisa mencapai saraf penciuman",
+                    "Lidah Budi kehilangan papila pengecap akibat virus flu",
+                    "Ujung saraf peraba pada mulut kehilangan sensitivitas"
+                ],
+                correctAnswer: 1,
+                svg: '<svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="200" fill="#FFE0B2"/><path d="M120,120 Q200,160 280,120 L260,160 Q200,190 140,160 Z" fill="#FF9800"/><path d="M140,110 L260,110" stroke="#E65100" stroke-width="15" stroke-linecap="round"/><path d="M170,90 Q180,60 170,40 M230,90 Q220,60 230,40 M200,100 Q190,60 210,30" fill="none" stroke="#FFF" stroke-width="6" stroke-linecap="round"/></svg>'
+            },
+            {
+                question: "Saat masuk ke kamar yang gelap dari teras yang terang benderang, kita tidak bisa melihat sesaat sebelum mata menyesuaikan diri. Bagian mata mana yang mengatur hal tersebut?",
+                options: [
+                    "Lensa mata menipis untuk membantu menajamkan fokus gambar",
+                    "Iris mengecil sehingga pupil membesar agar lebih banyak cahaya masuk",
+                    "Kornea menebal agar menangkap sisa cahaya yang ada",
+                    "Retina mata mendekat ke lensa agar cahaya pas sasaran"
+                ],
+                correctAnswer: 1,
+                svg: '<svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="200" fill="#E1F5FE"/><path d="M100,100 Q200,40 300,100 Q200,160 100,100 Z" fill="#FFF" stroke="#2196F3" stroke-width="8"/><circle cx="200" cy="100" r="40" fill="#1976D2"/><circle cx="200" cy="100" r="15" fill="#111"/><circle cx="215" cy="90" r="8" fill="#FFF"/></svg>'
+            },
+            {
+                question: "Ada suara letusan keras dari speaker TV yang rusak. Kita refleks akan menutup kedua telinga. Mengapa secara biologis kita melakukan itu?",
+                options: [
+                    "Agar suara letusan tidak memantul ke dinding telinga luar",
+                    "Mencegah resiko robeknya selaput gendang telinga akibat getaran hebat",
+                    "Untuk melindungi saraf optik pada pancaindera",
+                    "Mencegah patahnya tulang martil dan landasan secara bersamaan"
+                ],
+                correctAnswer: 1,
+                svg: '<svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="200" fill="#FCE4EC"/><rect x="120" y="60" width="160" height="100" rx="10" fill="#E91E63"/><circle cx="160" cy="110" r="25" fill="#880E4F"/><circle cx="240" cy="110" r="25" fill="#880E4F"/><path d="M300,110 A40,40 0 0,1 300,70 M315,125 A60,60 0 0,1 315,55 M330,140 A80,80 0 0,1 330,40 M100,110 A40,40 0 0,0 100,70 M85,125 A60,60 0 0,0 85,55 M70,140 A80,80 0 0,0 70,40" fill="none" stroke="#F48FB1" stroke-width="5" stroke-linecap="round"/></svg>'
+            },
+            {
+                question: "Dita tak sengaja memegang panci panas di dapur, seketika ia langsung menarik tangannya. Secara neurologis (sistem saraf), perjalanan respons refleks tersebut adalah...",
+                options: [
+                    "Kulit -> otak besar -> saraf motorik -> otot",
+                    "Kulit -> saraf motorik -> sumsum tulang belakang -> otot",
+                    "Kulit -> saraf sensorik -> sumsum tulang belakang -> saraf motorik -> otot",
+                    "Saraf sensorik -> kulit -> otot -> tulang belakang"
+                ],
+                correctAnswer: 2,
+                svg: '<svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="200" fill="#FFEBEE"/><path d="M120,150 L240,150 L220,80 L140,80 Z" fill="#9E9E9E"/><path d="M240,110 L280,110 A10,10 0 0,0 280,90 L230,90" fill="none" stroke="#616161" stroke-width="12" stroke-linecap="round"/><path d="M180,70 L180,40 M150,70 L160,30 M210,70 L200,30" fill="none" stroke="#FF5252" stroke-width="6" stroke-linecap="round"/><path d="M170,80 Q250,20 320,60" fill="none" stroke="#FFCC80" stroke-width="15" stroke-linecap="round"/></svg>'
+            },
+            {
+                question: "Anjing K9 polisi sangat handal mendeteksi sesuatu hanya lewat penciuman di udara. Apa yang membedakannya dengan indra penciuman manusia?",
+                options: [
+                    "Hidung anjing berevolusi untuk tidak mencium bau busuk sama sekali",
+                    "Anjing punya kemampuan menahan nafas lebih lama di suhu dingin",
+                    "Anjing menggunakan lidahnya sebagian besar untuk mencium bau",
+                    "Area saraf pembau utama di rongga hidung anjing jauh lebih padat dan luas dibanding manusia"
+                ],
+                correctAnswer: 3,
+                svg: '<svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="200" fill="#FFF3E0"/><path d="M160,100 Q160,50 200,50 Q240,50 240,100 L260,100 L260,140 L140,140 L140,100 Z" fill="#8D6E63"/><polygon points="160,50 140,20 180,60" fill="#5D4037"/><polygon points="240,50 260,20 220,60" fill="#5D4037"/><circle cx="180" cy="90" r="5" fill="#FFF"/><circle cx="220" cy="90" r="5" fill="#FFF"/><ellipse cx="200" cy="110" rx="15" ry="10" fill="#3E2723"/><path d="M130,50 Q100,50 90,80 M120,70 Q90,70 80,100" fill="none" stroke="#FFB74D" stroke-width="4" stroke-linecap="round" stroke-dasharray="5,5"/></svg>'
+            },
+            {
+                question: "Saat kamu menyantap sambal super pedas, lidah terasa seperti 'terbakar'. Sebenarnya, 'rasa pedas' tidak termasuk rasa primer (manis/asam/asin/pahit) karena...",
+                options: [
+                    "Pedas hanya terdeteksi oleh saraf hidung ketika kamu mengunyah makanan",
+                    "Sensasi pedas adalah tanggapan rasa sakit yang ditangkap oleh saraf peraba (nyeri) pada lidah",
+                    "Bintil pengecap pedas letaknya tersembunyi jauh di area rongga mulut bagian dalam",
+                    "Papila pada pangkal lidah gagal menerjemahkan senyawa kimia sambal"
+                ],
+                correctAnswer: 1,
+                svg: '<svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="200" fill="#FBE9E7"/><path d="M120,100 Q160,140 240,140 Q320,140 300,70 Q240,50 180,80 Q140,100 120,100 Z" fill="#D32F2F"/><path d="M120,100 Q100,80 140,60 L150,80" fill="#388E3C"/><path d="M260,100 Q280,60 300,60 Q320,70 290,110 Z" fill="#FFC107"/></svg>'
+            },
+            {
+                question: "Kakek baru bisa membaca koran dengan jelas saat ia sedikit menjauhkannya dari mata. Diagnosa dokter, elastisitas lensa mata kakek mulai berkurang karena faktor usia. Gangguan tersebut dinamakan...",
+                options: [
+                    "Miopi, dibantu lensa cekung",
+                    "Astigmatisme, dibantu lensa silindris",
+                    "Hipermetropi, dibantu lensa cembung",
+                    "Presbiopi (mata tua), dibantu kacamata bifokal (cembung-cekung)"
+                ],
+                correctAnswer: 3,
+                svg: '<svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="200" fill="#E8EAF6"/><rect x="130" y="50" width="140" height="100" fill="#FFF" transform="rotate(-5 200 100)"/><line x1="140" y1="70" x2="250" y2="65" stroke="#B0BEC5" stroke-width="4" transform="rotate(-5 200 100)"/><line x1="140" y1="90" x2="260" y2="85" stroke="#B0BEC5" stroke-width="4" transform="rotate(-5 200 100)"/><line x1="140" y1="110" x2="240" y2="105" stroke="#B0BEC5" stroke-width="4" transform="rotate(-5 200 100)"/><rect x="150" y="80" width="40" height="30" rx="5" fill="none" stroke="#3F51B5" stroke-width="6"/><rect x="220" y="80" width="40" height="30" rx="5" fill="none" stroke="#3F51B5" stroke-width="6"/><line x1="190" y1="95" x2="220" y2="95" stroke="#3F51B5" stroke-width="4"/><line x1="100" y1="95" x2="150" y2="95" stroke="#3F51B5" stroke-width="4"/><line x1="260" y1="95" x2="310" y2="95" stroke="#3F51B5" stroke-width="4"/></svg>'
+            },
+            {
+                question: "Jika kamu berputar-putar seperti gangsing, lalu berhenti seketika, dunia terasa ikut berputar pelan dan kamu gampang terjatuh. Hal ini terjadi akibat efek inersia pada...",
+                options: [
+                    "Cairan limfa yang masih bergoyang di dalam saluran setengah lingkaran di telinga dalam",
+                    "Otot penggerak mata (saraf optik yang kejang sementara) karena lelah mencari sumbu fokus",
+                    "Gendang telinga yang meregang secara tidak wajar saat proses tubuh memutar cepat",
+                    "Darah di ujung hidung berkurang mensuplai oksigen untuk saraf olfaktori"
+                ],
+                correctAnswer: 0,
+                svg: '<svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="200" fill="#E0F2F1"/><polygon points="200,160 160,80 240,80" fill="#009688"/><rect x="195" y="40" width="10" height="40" fill="#795548"/><ellipse cx="200" cy="80" rx="40" ry="15" fill="#4DB6AC"/><path d="M260,80 C320,80 320,120 280,140 M140,80 C80,80 80,120 120,140" fill="none" stroke="#80CBC4" stroke-width="4" stroke-linecap="round" stroke-dasharray="10,5"/></svg>'
+            },
+            {
+                question: "Pak Eko mengamati rambu jalan melalui kaca spion mobil. Dari sisi mekanisme terbentuknya penglihatan, hal tersebut dapat terjadi karena...",
+                options: [
+                    "Mata Pak Eko memancarkan energi gelombang lurus langsung ke tulisan di spion",
+                    "Cahaya dari rambu memantul dari kaca spion, lalu masuk melewati kornea dan lensa yang akhirnya membentuk bayangan di atas retina",
+                    "Kornea bekerja ganda untuk menterjemahkan dua dimensi cermin langsung ke saraf pusat",
+                    "Lensa cembung spion menangkap cahaya dengan membengkokkan otot polos mata"
+                ],
+                correctAnswer: 1,
+                svg: '<svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="200" fill="#ECEFF1"/><path d="M120,60 L280,60 Q320,60 320,100 L320,100 Q320,140 280,140 L120,140 Q80,140 80,100 L80,100 Q80,60 120,60 Z" fill="#37474F"/><path d="M130,75 L270,75 Q300,75 300,100 L300,100 Q300,125 270,125 L130,125 Q100,125 100,100 L100,100 Q100,75 130,75 Z" fill="#90CAF9"/><line x1="240" y1="90" x2="280" y2="90" stroke="#FFF" stroke-width="5" stroke-linecap="round"/><line x1="250" y1="110" x2="270" y2="110" stroke="#FFF" stroke-width="5" stroke-linecap="round"/></svg>'
+            },
+            {
+                question: "Kulit merupakan indra peraba sekaligus pengatur homeostasis tubuh. Apa yang dilakukan pembuluh darah di kulit ketika suhu ruang sangat dingin untuk menjaga panas tubuh?",
+                options: [
+                    "Permukaan kulit melebar dan menghitam sehingga mempercepat resapan udara dingin",
+                    "Pembuluh darah dekat kulit melebar (vasodilatasi) untuk memancarkan panas",
+                    "Kelenjar keringat dipaksa segera memproduksi air agar suhu menjadi hangat akibat uapnya",
+                    "Pembuluh darah menyempit (vasokonstriksi) agar darah hangat tidak banyak mengalir ke dekat permukaan yang dingin"
+                ],
+                correctAnswer: 3,
+                svg: '<svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="200" fill="#FFFDE7"/><circle cx="200" cy="70" r="30" fill="#FFCC80"/><rect x="190" y="100" width="20" height="50" fill="#4CAF50"/><line x1="190" y1="110" x2="150" y2="140" stroke="#FFCC80" stroke-width="12" stroke-linecap="round"/><line x1="210" y1="110" x2="250" y2="90" stroke="#FFCC80" stroke-width="12" stroke-linecap="round"/><line x1="195" y1="150" x2="180" y2="190" stroke="#1565C0" stroke-width="12" stroke-linecap="round"/><line x1="205" y1="150" x2="230" y2="170" stroke="#1565C0" stroke-width="12" stroke-linecap="round"/><path d="M160,50 Q160,30 170,40 M230,50 Q240,30 230,20 M180,30 Q190,10 200,20" fill="none" stroke="#29B6F6" stroke-width="4" stroke-linecap="round"/></svg>'
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let hasAnswered = false;
+        const pointsPerQuestion = 10;
+
+        // DOM Elements
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const questionText = document.getElementById('question-text');
+        const questionImageEl = document.getElementById('question-image');
+        const optionsContainer = document.getElementById('options');
+        const nextButton = document.getElementById('next-btn');
+        const feedbackArea = document.getElementById('feedback');
+        const questionCount = document.getElementById('question-count');
+        const currentScoreEl = document.getElementById('current-score');
+        const progressBar = document.getElementById('progress-bar');
+
+        function startQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            hasAnswered = false;
+            
+            quizScreen.style.display = 'block';
+            resultScreen.classList.remove('show');
+            
+            updateScoreDisplay();
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            hasAnswered = false;
+            const q = quizData[currentQuestion];
+            
+            // Set text & progress
+            questionText.innerText = q.question;
+            questionCount.innerText = `Soal ${currentQuestion + 1}/${quizData.length}`;
+            
+            // Inject SVG Image
+            if (q.svg) {
+                questionImageEl.innerHTML = q.svg;
+                questionImageEl.style.display = 'flex';
+            } else {
+                questionImageEl.style.display = 'none';
+            }
+
+            // Progress bar goes from 0 to 100
+            const progressPercent = ((currentQuestion) / quizData.length) * 100;
+            progressBar.style.width = `${progressPercent}%`;
+
+            // Clear state
+            optionsContainer.innerHTML = '';
+            feedbackArea.className = 'feedback-area';
+            feedbackArea.innerHTML = '';
+            nextButton.classList.remove('show');
+
+            // Render options
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedIndex, selectedBtn) {
+            if (hasAnswered) return;
+            hasAnswered = true;
+
+            const q = quizData[currentQuestion];
+            const isCorrect = (selectedIndex === q.correctAnswer);
+            const allBtns = optionsContainer.querySelectorAll('.option-btn');
+
+            // Disable all options
+            allBtns.forEach(btn => btn.disabled = true);
+
+            if (isCorrect) {
+                selectedBtn.classList.add('correct');
+                score += pointsPerQuestion;
+                updateScoreDisplay();
+                showFeedback(true);
+            } else {
+                selectedBtn.classList.add('wrong');
+                // Highlight the correct answer
+                allBtns[q.correctAnswer].classList.add('correct');
+                showFeedback(false);
+            }
+
+            // Show next button
+            nextButton.classList.add('show');
+        }
+
+        function showFeedback(isCorrect) {
+            feedbackArea.className = 'feedback-area show';
+            if (isCorrect) {
+                feedbackArea.classList.add('feedback-correct');
+                const messages = ["Analisis yang Hebat! 🎉", "Benar Sekali! 🌟", "Kamu Jenius! ⭐", "Sangat Tepat! 🚀"];
+                feedbackArea.innerText = messages[Math.floor(Math.random() * messages.length)];
+            } else {
+                feedbackArea.classList.add('feedback-wrong');
+                feedbackArea.innerText = "Kurang Tepat, yuk teliti lagi! 😅";
+            }
+        }
+
+        function updateScoreDisplay() {
+            currentScoreEl.innerText = `⭐ ${score}`;
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < quizData.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            quizScreen.style.display = 'none';
+            resultScreen.classList.add('show');
+            
+            const finalScoreEl = document.getElementById('final-score');
+            const resultTitle = document.getElementById('result-title');
+            const resultMessage = document.getElementById('result-message');
+
+            // Animate score counter
+            let displayScore = 0;
+            const timer = setInterval(() => {
+                finalScoreEl.innerText = displayScore;
+                if (displayScore >= score) {
+                    clearInterval(timer);
+                    finalScoreEl.innerText = score; 
+                }
+                displayScore += 5;
+            }, 30);
+
+            if (score === 100) {
+                resultTitle.innerText = "Sempurna! 🤩";
+                resultMessage.innerText = "Luar biasa! Analisismu tentang materi Panca Indra sangat tajam dan jenius!";
+                shootConfetti();
+            } else if (score >= 80) {
+                resultTitle.innerText = "Pintar! 🌟";
+                resultMessage.innerText = "Kamu sudah sangat menguasai konsep HOTS pada materi Panca Indra!";
+            } else if (score >= 60) {
+                resultTitle.innerText = "Bagus! 👍";
+                resultMessage.innerText = "Cukup baik, tapi yuk tingkatkan lagi kejelian menyimpulkan masalah.";
+            } else {
+                resultTitle.innerText = "Belajar Lagi Yuk! 💪";
+                resultMessage.innerText = "Jangan menyerah, ayo perdalam lagi konsep dasar sistem indra tubuh kita!";
+            }
+        }
+
+        function shootConfetti() {
+            const colors = ['#FF5722', '#2196F3', '#4CAF50', '#FFEB3B', '#9C27B0', '#00BCD4'];
+            for (let i = 0; i < 80; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.top = '-10px';
+                    
+                    const duration = Math.random() * 2 + 2; 
+                    confetti.style.animationDuration = duration + 's';
+                    
+                    if (Math.random() > 0.5) {
+                        confetti.style.borderRadius = '50%';
+                    }
+
+                    document.body.appendChild(confetti);
+
+                    setTimeout(() => confetti.remove(), duration * 1000);
+                }, i * 25); 
+            }
+        }
+
+        // Initialize quiz on load
+        startQuiz();
+    </script>
+</body>
+</html>
